@@ -19,7 +19,7 @@
 #define PRINT_INTERVAL_MS             (10000)  // 10 seconds
 #define DEVICE_TIMEOUT_MS             (60000)  // 1 minute
 
-uint8_t level = 0, channel = 1;
+uint8_t channel = 1;
 
 static wifi_country_t wifi_country = {.cc="CN", .schan = 1, .nchan = 13}; //Most recent esp32 library struct
 
