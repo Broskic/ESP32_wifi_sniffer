@@ -13,7 +13,7 @@
 #include <map>                          // Standard C++ map container
 #include <chrono>                       // Standard C++ chrono library for time-related functionality
 
-#define LED_GPIO_PIN                     5                   // GPIO pin for LED
+#define LED_GPIO_PIN                     (5)                   // GPIO pin for LED
 #define WIFI_CHANNEL_SWITCH_INTERVAL  (500)                  // Interval for switching Wi-Fi channels in milliseconds
 #define WIFI_CHANNEL_MAX               (13)                  // Maximum Wi-Fi channel number
 #define PRINT_INTERVAL_MS             (10000)                // Interval for printing unique device count in milliseconds (10 seconds)
@@ -24,12 +24,12 @@ uint8_t channel = 1;                                        // Current Wi-Fi cha
 static wifi_country_t wifi_country = {.cc="CN", .schan = 1, .nchan = 13}; // Wi-Fi country configuration
 
 typedef struct {                                            // Structure for Wi-Fi MAC header
-    unsigned frame_ctrl:16;                                 // Frame control field
-    unsigned duration_id:16;                                // Duration/ID field
+    uint16_t frame_ctrl;                                 // Frame control field
+    uint16_t duration_id;                                // Duration/ID field
     uint8_t addr1[6];                                       // Receiver address
     uint8_t addr2[6];                                       // Sender address
     uint8_t addr3[6];                                       // Filtering address
-    unsigned sequence_ctrl:16;                              // Sequence control field
+    uint16_t sequence_ctrl;                              // Sequence control field
     uint8_t addr4[6];                                       // Optional fourth address field
 } wifi_ieee80211_mac_hdr_t;
 
@@ -83,11 +83,11 @@ void wifi_sniffer_packet_handler(void* buff, wifi_promiscuous_pkt_type_t type)
     if (type != WIFI_PKT_MGMT)                              // Only handle management packets
         return;
 
-    const wifi_promiscuous_pkt_t *ppkt = (wifi_promiscuous_pkt_t *)buff; // Cast the buffer to a Wi-Fi packet structure
+    const wifi_promiscuous_pkt_t *ppkt = (wifi_promiscuous_pkt_t *)buff; // Cast the buffer to a Wi-Fi packet structure , c style cast / static_cast<>, dynamic_cast<>
     const wifi_ieee80211_packet_t *ipkt = (wifi_ieee80211_packet_t *)ppkt->payload; // Get the IEEE802.11 packet structure from the Wi-Fi packet
     const wifi_ieee80211_mac_hdr_t *hdr = &ipkt->hdr;       // Get the MAC header from the IEEE802.11 packet
 
-    // Extract MAC address
+    // Extract MAC address // XX:XX:XX:XX:XX:XX
     char addr2_str[18];
     snprintf(addr2_str, sizeof(addr2_str), "%02x:%02x:%02x:%02x:%02x:%02x",
              hdr->addr2[0], hdr->addr2[1], hdr->addr2[2],
