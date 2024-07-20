@@ -40,6 +40,9 @@ typedef struct {                                            // Structure for ful
 
 std::map<std::string, std::chrono::steady_clock::time_point> devices_last_seen; // Map to store last seen time of devices
 
+std::map<std::string, bool> static_devices;
+std::map<std::string, std::chron::steady_clock::time_point> initial_time;
+
 static void wifi_sniffer_init(void);                        // Function prototype for initializing Wi-Fi sniffer
 static void wifi_sniffer_set_channel(uint8_t channel);      // Function prototype for setting Wi-Fi channel
 static const char *wifi_sniffer_packet_type2str(wifi_promiscuous_pkt_type_t type); // Function prototype for getting packet type as string
@@ -95,8 +98,26 @@ void wifi_sniffer_packet_handler(void* buff, wifi_promiscuous_pkt_type_t type)
 
     // Update last seen time
     auto now = std::chrono::steady_clock::now();            // Get the current time
+
+    if(devices_last_seen[std::string(addr2_str]){   //provera da li postoji uredjaj 
+
+        
+            auto last_seen_duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - devices_last_seen[std::string[addr2_str]]).count();
+            if(last_seen_duration < 10000){ //potencijalno statican uredjaj
+
+                if(initial_time[std::string(addr2_str] > 600000){
+                    static_devices[std::string(addr2_str)] = true;
+                    auto init = std::chrono::steady_clock::now();
+                    initial_time[std::string(addr2_str] = init;
+
+            }
+        }
+        
+    }
     devices_last_seen[std::string(addr2_str)] = now;        // Update the last seen time for the device
+
 }
+
 
 void remove_static_devices() {
     auto now = std::chrono::steady_clock::now();            // Get the current time
