@@ -41,7 +41,7 @@ typedef struct {                                            // Structure for ful
 std::map<std::string, std::chrono::steady_clock::time_point> devices_last_seen; // Map to store last seen time of devices
 
 std::map<std::string, bool> static_devices;
-std::map<std::string, std::chron::steady_clock::time_point> initial_time;
+std::map<std::string, std::chron::steady_clock::time_point> device_initial_time;
 
 static void wifi_sniffer_init(void);                        // Function prototype for initializing Wi-Fi sniffer
 static void wifi_sniffer_set_channel(uint8_t channel);      // Function prototype for setting Wi-Fi channel
@@ -86,8 +86,8 @@ void wifi_sniffer_packet_handler(void* buff, wifi_promiscuous_pkt_type_t type)
     if (type != WIFI_PKT_MGMT)                              // Only handle management packets
         return;
 
-    const wifi_promiscuous_pkt_t *ppkt = (wifi_promiscuous_pkt_t *)buff; // Cast the buffer to a Wi-Fi packet structure , c style cast / static_cast<>, dynamic_cast<>
-    const wifi_ieee80211_packet_t *ipkt = (wifi_ieee80211_packet_t *)ppkt->payload; // Get the IEEE802.11 packet structure from the Wi-Fi packet
+    const wifi_promiscuous_pkt_t *ppkt = static_cast<wifi_promiscuous_pkt_t *>(buff); // Cast the buffer to a Wi-Fi packet structure
+    const wifi_ieee80211_packet_t *ipkt = reinterpret_cast<wifi_ieee80211_packet_t *>(ppkt->payload); // Get the IEEE802.11 packet structure from the Wi-Fi packet
     const wifi_ieee80211_mac_hdr_t *hdr = &ipkt->hdr;       // Get the MAC header from the IEEE802.11 packet
 
     // Extract MAC address // XX:XX:XX:XX:XX:XX
@@ -99,25 +99,27 @@ void wifi_sniffer_packet_handler(void* buff, wifi_promiscuous_pkt_type_t type)
     // Update last seen time
     auto now = std::chrono::steady_clock::now();            // Get the current time
 
-    if(devices_last_seen[std::string(addr2_str]){   //provera da li postoji uredjaj 
+    //staticni uredjaji salju kontinualno signal na svakih 10s
 
-        
-            auto last_seen_duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - devices_last_seen[std::string[addr2_str]]).count();
-            if(last_seen_duration < 10000){ //potencijalno statican uredjaj
+    if(devices_last_seen.find(addr2_str) != devices_last_seen.end()){   //provera da li postoji uredjaj 
 
-                if(initial_time[std::string(addr2_str] > 600000){
-                    static_devices[std::string(addr2_str)] = true;
-                    auto init = std::chrono::steady_clock::now();
-                    initial_time[std::string(addr2_str] = init;
+        //Koliko je proslo vremena od prethodnog poslatog signala 
+        auto last_seen_duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - devices_last_seen[addr2_str]).count(); 
+    
+        if(last_seen_duration < 10000){ //Ako je proslo manje od 10s - potencijalno statican uredjaj 
 
+            //u prvih 60s ne razmatramo da li je uredjaj statican zbog drugog uslova
+            if(device_initial_time[addr2_str] > 60000){ //Ukoliko je proslo vise od 60s od inicijalnog vremena
+                static_devices[addr2_str] = true;
             }
         }
-        
-    }
-    devices_last_seen[std::string(addr2_str)] = now;        // Update the last seen time for the device
 
+    }else{
+        device_initial_time[addr2_str] = now;      //U slucaju da je uredjaj prvi put vidjen, cuvamo inicijalno vreme
+    }      
+
+    devices_last_seen[addr2_str] = now;        //U svakom slucaju update poslednje vreme kada je uredjaj vidjen
 }
-
 
 void remove_static_devices() {
     auto now = std::chrono::steady_clock::now();            // Get the current time
