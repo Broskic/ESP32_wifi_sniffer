@@ -1,5 +1,6 @@
 #include "freertos/FreeRTOS.h"          // FreeRTOS library for ESP32
 #include "freertos/task.h"              // FreeRTOS task management
+#include "freertos/timers.h"            // FreeRTOS timers
 #include "esp_wifi.h"                   // ESP32 Wi-Fi library
 #include "esp_wifi_types.h"             // ESP32 Wi-Fi types
 #include "esp_system.h"                 // ESP32 system functions
@@ -7,7 +8,6 @@
 #include "nvs_flash.h"                  // ESP32 non-volatile storage
 #include "driver/gpio.h"                // ESP32 GPIO driver
 #include "esp_log.h"                    // ESP32 logging library
-#include <set>                          // Standard C++ set container
 #include <string>                       // Standard C++ string handling
 #include <sstream>                      // Standard C++ string stream
 #include <map>                          // Standard C++ map container
@@ -122,14 +122,10 @@ void wifi_sniffer_packet_handler(void* buff, wifi_promiscuous_pkt_type_t type)
 }
 
 void remove_static_devices() {
-    auto now = std::chrono::steady_clock::now();            // Get the current time
 
-    for(auto it = devices_last_seen.begin(); it != devices_last_seen.end(); ) {
-        auto last_seen_duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - it->second).count();
-
-        // Check if the device has not been seen for more than DEVICE_TIMEOUT_MS
-        if(last_seen_duration > DEVICE_TIMEOUT_MS) {
-            it = devices_last_seen.erase(it);               // Erase the device from the map
+    for(auto it = static_devices.begin(); it != static_devices.end(); ) {
+        if (it->second == true){
+            it = static_devices.erase(it);               // Erase the device from the map
         } else {
             ++it;
         }
