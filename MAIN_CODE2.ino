@@ -154,7 +154,9 @@ void setup() {
     pinMode(LED_GPIO_PIN, OUTPUT);
 
     // Create a timer for printing unique device count every 10 seconds
-    xPrintTimer = xTimerCreate("PrintTimer", pdMS_TO_TICKS(PRINT_INTERVAL_MS), pdTRUE, (void *)0, print_unique_devices_task);
+    xPrintTimer = xTimerCreate("PrintTimer", pdMS_TO_TICKS(PRINT_INTERVAL_MS), pdTRUE, (void *)0, [](TimerHandle_t xTimer) {
+        print_unique_devices_task(); 
+    });
     xTimerStart(xPrintTimer, 0);
 
     // Create a timer for switching Wi-Fi channels
