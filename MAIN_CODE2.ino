@@ -127,7 +127,7 @@ void wifi_sniffer_packet_handler(void* buff, wifi_promiscuous_pkt_type_t type)
     devices_last_seen[addr2_str] = now;        //U svakom slucaju update poslednje vreme kada je uredjaj vidjen
 }
 
-void remove_static_devices(TimerHandle_t xTimer) {
+void remove_static_devices() {
     for(auto it = static_devices.begin(); it != static_devices.end(); ) {
         if (it->second == true){
             it = static_devices.erase(it);               // Erase the device from the map
@@ -137,8 +137,8 @@ void remove_static_devices(TimerHandle_t xTimer) {
     }
 }
 
-void print_unique_devices_task(TimerHandle_t xTimer) {
-    remove_static_devices(xTimer); // Remove static devices from the map
+void print_unique_devices_task() {
+    remove_static_devices(); // Remove static devices from the map
     ESP_LOGI("Unique Devices", "Count: %d", devices_last_seen.size()); // Log the count of unique devices
 
     // Print each unique address
